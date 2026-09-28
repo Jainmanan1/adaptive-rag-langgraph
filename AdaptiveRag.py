@@ -970,12 +970,25 @@ def run_pipeline(question: str):
     final_state["sources"] = sources
 
     logger.info("[%s] Done.", request_id)
+      # TEMPORARY
+    print("\n===== FINAL STATE =====")
+    print(final_state.keys())
+
+    for key, value in final_state.items():
+        if key != "documents":
+            print(f"\n{key}:")
+            print(value)
+
+    print("\nDocuments:")
+    for i, doc in enumerate(final_state.get("documents", []), start=1):
+        print(f"\n--- Document {i} ---")
+        print(doc.page_content[:500])
 
     return final_state
 
 
 if __name__ == "__main__":
-    result2 = run_pipeline("What is prompt engineering ?")
+    result2 = run_pipeline("What is gen ai  ?")
    
 
     print("\n--- FINAL ANSWER ---")
@@ -986,7 +999,5 @@ if __name__ == "__main__":
         for source in result2["sources"][:3]:
             print("-", source)   
 
-
-    print("\n--- FINAL ANSWER ---")
     
 

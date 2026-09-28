@@ -12,7 +12,7 @@ llm = ChatOllama(
 embeddings = OllamaEmbeddings(model="nomic-embed-text")
 
 
-# cd D:\python\crag                          
+                        
 #  python -m evals.evals  
 
 
@@ -31,21 +31,7 @@ questions = [
             "optimizing prompts to guide an AI model toward desired outputs."
         ),
     },
-    # {
-    #     "question": "What is generative AI?",
-    #     "reference": (
-    #         "Generative AI is a type of artificial intelligence that "
-    #         "can generate new content such as text, images, audio, or code."
-    #     ),
-    # },
-    # {
-    #     "question": "What is retrieval augmented generation?",
-    #     "reference": (
-    #         "Retrieval-augmented generation combines information retrieval "
-    #         "with language generation by retrieving relevant external "
-    #         "information and using it to generate an answer."
-    #     ),
-    # },
+  
 ]
 
 

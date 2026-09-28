@@ -150,6 +150,54 @@ Answer: Agent memory can be categorized into sensory memory, short-term
 (working) memory, and long-term memory, which is further split into
 explicit (episodic and semantic) and implicit (procedural) memory.
 
+
+
 Sources:
 - https://lilianweng.github.io/posts/2023-06-23-agent/
 ```
+
+
+## 9. Evaluation (RAGAS)
+
+Built a RAGAS-based evaluation layer (`evals/`) on top of the pipeline, using
+llama3.1 (via Ollama) as the judge LLM, testing against a small hand-curated
+question set covering all three routing paths.
+
+### Setup note
+Hit an unpatched upstream bug in `ragas` (both 0.3.9 and 0.4.3) where an
+unconditional import of `ChatVertexAI` from a path removed in current
+`langchain-community` versions breaks `import ragas` entirely — see
+[ragas#2745](https://github.com/vibrantlabsai/ragas/issues/2745). Worked
+around by patching the import in the installed package to fall back
+gracefully when Vertex AI isn't installed, matching the fix in the project's
+own [open PR #3017](https://github.com/vibrantlabsai/ragas/pull/3017).
+
+### Findings
+
+**Faithfulness returns NaN.** On a question with genuinely weak retrieval
+(2 of 4 retrieved chunks were page navigation/boilerplate, not article
+content), the Faithfulness metric consistently returned `NaN` rather than a
+low score — likely because its statement-decomposition step couldn't extract
+verifiable claims from an answer that wasn't well-grounded in the (mostly
+irrelevant) context. Notably, this NaN is itself a useful signal: it
+correctly flagged a real retrieval problem that the other three metrics
+scored past without comment.
+
+**ContextPrecision/ContextRecall scored a suspicious 1.0 on the same weak
+context.** On the identical retrieved chunks that produced the Faithfulness
+NaN, ContextPrecision and ContextRecall both returned perfect 1.0 scores —
+directly contradicting manual inspection, which confirmed half the chunks
+were boilerplate with no relevant content. This suggests llama3.1 8B, used
+as the judge, is not reliably discriminating context relevance — consistent
+with this project's other findings on the model's limits for structured
+judgment tasks (see routing instability, fabricated-list findings above).
+
+**Takeaway:** automated eval scores from a small local judge model should not
+be trusted without spot-checking against the actual retrieved content — a
+"passing" score can mask a real retrieval failure that a stricter metric
+(or a human) would catch.
+
+### Latency
+A single question with 3 metrics took ~14 minutes end-to-end using llama3.1
+as judge — impractical for frequent or large-scale eval runs without a
+faster or hosted judge model.
